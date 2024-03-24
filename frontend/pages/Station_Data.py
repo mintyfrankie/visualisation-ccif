@@ -102,9 +102,9 @@ def construct_charts(type: str, station_id: str):
 def display_page():
     with st.sidebar:
         st.write("**Weather Station Information**")
-        # FIXME: add the default value to the selectbox so that N/A data won't be displayed
+        station_ids = get_station_list()["station_id"].sort_values()
         station_id = st.selectbox(
-            "Select the Station ID", get_station_list()["station_id"].sort_values()
+            "Select the Station ID", station_ids, index=(len(station_ids) - 1)
         )
         station_info = query_station_info(station_id).to_dict(orient="records")[0]
         st.write(f"""
