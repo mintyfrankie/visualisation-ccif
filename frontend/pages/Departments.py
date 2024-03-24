@@ -50,12 +50,18 @@ def display_page():
             format_func=lambda x: display_labels[department_code_list.index(str(x))],
         )
 
-        # FIXME: the following line is not working
+    # FIXME: the following line is not working
+    with st.container(height=500, border=False):
         st.plotly_chart(
             draw_department_shape(department, load_geojson()), use_container_width=True
         )
-
     st.write(f"## 🗺️ {department_name_list[department_code_list.index(department)]}")
+
+    tab1, tab2 = st.tabs(["Temperature", "Precipitation"])
+    with tab1:
+        pass
+    with tab2:
+        pass
 
 
 display_page()

@@ -11,7 +11,14 @@ conn = sqlite3.connect("./data/data.db")
 
 @st.cache_data
 def get_station_list():
-    query = "SELECT * FROM stations WHERE department_id < 900"
+    query = """
+    SELECT station_id
+    FROM stations
+    WHERE station_id IN (
+        SELECT DISTINCT station_id
+        FROM measurements
+        )
+    """
     df = pd.read_sql(query, conn)
     return df
 

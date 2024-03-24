@@ -10,7 +10,14 @@ conn = sqlite3.connect("./data/data.db")
 
 @st.cache_data
 def load_stations():
-    query = "SELECT * FROM stations WHERE department_id < 900"
+    query = """
+    SELECT *
+    FROM stations
+    WHERE station_id IN (
+        SELECT DISTINCT station_id
+        FROM measurements
+        )
+    """
     df = pd.read_sql(query, conn, index_col="id")
 
     df["station_id"] = df["station_id"].astype(str)
