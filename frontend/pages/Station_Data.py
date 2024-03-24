@@ -55,6 +55,8 @@ def construct_charts(type: str, station_id: str):
     st.write(f"## {type.capitalize()}")
     st.write("### Historical Evolution")
     try:
+        if df.empty:
+            raise ValueError
         st.plotly_chart(
             px.line(
                 df,
@@ -92,9 +94,10 @@ def construct_charts(type: str, station_id: str):
 
 def display_page():
     with st.sidebar:
-        st.write("**Choose a station**")
+        st.write("**Weather Station Information**")
+        # FIXME: add the default value to the selectbox so that N/A data won't be displayed
         station_id = st.selectbox(
-            "Station ID", get_station_list()["station_id"].sort_values()
+            "Select the Station ID", get_station_list()["station_id"].sort_values()
         )
         station_info = query_station_info(station_id).to_dict(orient="records")[0]
         st.write(f"""
