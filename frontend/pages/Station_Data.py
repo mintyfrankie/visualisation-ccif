@@ -53,15 +53,23 @@ def construct_charts(type: str, station_id: str):
             min_max_scale = (df["value_min"].min(), df["value_max"].max())
             historical_y = ["value_max", "value_min"]
             decomposition_x = "value_max"
+            y_label = "Temperature (°C)"
         case "precipitation":
             df = get_time_series(station_id, "RR")
             min_max_scale = (df["value"].min(), df["value"].max())
             historical_y = ["value"]
             decomposition_x = "value"
+            y_label = "Precipitation (mm)"
 
     st.write(f"## {type.capitalize()}")
     st.write("### Historical Evolution")
     try:
+        legend_labels = {
+            "value_max": "Max Temperature",
+            "value_min": "Min Temperature",
+            "value": "Precipitation",
+        }
+
         if df.empty:
             raise ValueError
         st.plotly_chart(
@@ -69,14 +77,27 @@ def construct_charts(type: str, station_id: str):
                 df,
                 x="timestamp",
                 y=historical_y,
-            ).update_yaxes(range=min_max_scale),
+            )
+            .update_yaxes(range=min_max_scale)
+            .update_layout(
+                xaxis_title="Date",
+                yaxis_title=y_label,
+            )
+            .for_each_trace(lambda trace: trace.update(name=legend_labels[trace.name])),
             use_container_width=True,
         )
+
     except ValueError:
         st.write("No data available for this station.")
 
     st.write("### Seasonal Decomposition")
     try:
+        legend_labels = {
+            "trend": "Trend",
+            "seasonal": "Seasonal",
+            "residual": "Residual",
+        }
+
         decomposition = seasonal_decompose(df[decomposition_x], period=12)
         df_dcom = pd.DataFrame(
             {
@@ -91,7 +112,12 @@ def construct_charts(type: str, station_id: str):
                 df_dcom,
                 x="timestamp",
                 y=["trend", "seasonal", "residual"],
-            ),
+            )
+            .update_layout(
+                xaxis_title="Date",
+                yaxis_title="Value",
+            )
+            .for_each_trace(lambda trace: trace.update(name=legend_labels[trace.name])),
             use_container_width=True,
         )
 
