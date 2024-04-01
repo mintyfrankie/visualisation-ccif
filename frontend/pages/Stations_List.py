@@ -9,7 +9,14 @@ conn = sqlite3.connect("./data/data.db")
 
 
 @st.cache_data
-def load_stations():
+def load_stations() -> pd.DataFrame:
+    """
+    Load stations metadata from the database.
+
+    Returns:
+        DataFrame: A pandas DataFrame containing the stations data.
+    """
+
     query = """
     SELECT *
     FROM stations
@@ -25,6 +32,10 @@ def load_stations():
 
 
 def display_page():
+    """
+    Main function to display the page.
+    """
+
     st.write("# Station List")
     st.write("""
     **This page displays a list of all the weather stations included in the dataset.**

@@ -13,14 +13,25 @@ conn = sqlite3.connect("./data/data.db")
 
 
 @st.cache_data
-def load_geojson():
+def load_geojson() -> dict:
+    """
+    Load the geojson file containing the departments shapes.
+    """
+
     with open("./data/raw/departments_shape/departments.geojson") as f:
         data = json.load(f)
     return data
 
 
 @st.cache_data
-def get_station_department_mapping():
+def get_station_department_mapping() -> pd.DataFrame:
+    """
+    Retrieves the mapping between stations and departments from the database.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the station_id and department_id mapping.
+    """
+
     query = """
     SELECT stations.station_id, stations.department_id
     FROM stations
@@ -38,7 +49,17 @@ def get_station_department_mapping():
 ### Components
 
 
-def get_department_timerange(department_id: str):
+def get_department_timerange(department_id: str) -> tuple[int, int]:
+    """
+    Retrieves the minimum and maximum timestamps for measurements associated with a given department.
+
+    Args:
+        department_id (str): The ID of the department.
+
+    Returns:
+        tuple[int, int]: A tuple containing the minimum and maximum timestamps as integers.
+    """
+    
     query = f"""
         SELECT MIN(timestamp), MAX(timestamp)
         FROM measurements
@@ -58,7 +79,21 @@ def get_department_timerange(department_id: str):
 
 def get_time_series(
     department_id: str, variable: str, min_year: int, max_year: int, agg_method="mean"
-):
+) -> pd.DataFrame:
+    """
+    Retrieves time series data for a specific department, variable, and time range.
+    
+    Args:
+        department_id (str): The ID of the department.
+        variable (str): The variable to retrieve time series data for.
+        min_year (int): The minimum year of the time range.
+        max_year (int): The maximum year of the time range.
+        agg_method (str, optional): The aggregation method to apply to the time series data. Defaults to "mean".
+    
+    Returns:
+        pd.DataFrame: A DataFrame containing the time series data.
+    """
+
     query = f"""
     SELECT timestamp, measurements.station_id AS station_id, variable, value
     FROM measurements
@@ -71,12 +106,15 @@ def get_time_series(
     WHERE variable = '{variable}' AND timestamp BETWEEN "{min_year}-01-01" AND "{max_year}-01-01"
     """
     df = pd.read_sql(query, conn)
-    # FIXME: seems like agg method is not working
     output = df.groupby("timestamp")["value"].agg(agg_method).reset_index()
     return output
 
 
 def construct_charts(type: str, department: str, time_range: tuple, agg_method: str):
+    """
+    Construct the charts for the given type of data in a tab.
+    """
+
     match type:
         case "temperature":
             tn = get_time_series(
@@ -167,6 +205,10 @@ def construct_charts(type: str, department: str, time_range: tuple, agg_method: 
 
 
 def display_page():
+    """
+    Main function to display the page.
+    """
+    
     with st.sidebar:
         st.write("## Query Parameters")
         department_code_list = [
@@ -206,6 +248,8 @@ def display_page():
             format_func=str.capitalize,
         )
 
+    # TODO: add map
+        
     st.write(f"## 🗺️ {department_name_list[department_code_list.index(department)]}")
 
     tab1, tab2 = st.tabs(["Temperature", "Precipitation"])
@@ -217,3 +261,4 @@ def display_page():
 
 
 display_page()
+

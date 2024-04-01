@@ -10,7 +10,14 @@ conn = sqlite3.connect("./data/data.db")
 
 
 @st.cache_data
-def get_station_list():
+def get_station_list() -> pd.DataFrame:
+    """
+    Retrieve the list of Station ID available in the measurements table.
+
+    Returns:
+        DataFrame: A pandas DataFrame containing the station IDs.
+    """
+
     query = """
     SELECT station_id
     FROM stations
@@ -24,7 +31,17 @@ def get_station_list():
 
 
 @st.cache_data
-def query_station_info(station_id: str):
+def query_station_info(station_id: str) -> pd.DataFrame:
+    """
+    Query station information from the database based on the given station ID.
+
+    Parameters:
+        station_id (str): The ID of the station to query.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the queried station information.
+    """
+
     query = f"""
         SELECT * FROM stations
         WHERE station_id = "{station_id}"
@@ -34,7 +51,18 @@ def query_station_info(station_id: str):
 
 
 @st.cache_data
-def get_time_series(station_id: str, variable: str):
+def get_time_series(station_id: str, variable: str) -> pd.DataFrame:
+    """
+    Retrieve time series data for a specific station and variable from the measurements table.
+
+    Parameters:
+    station_id (str): The ID of the station.
+    variable (str): The variable to retrieve data for.
+
+    Returns:
+    pd.DataFrame: A DataFrame containing the time series data.
+    """
+
     query = f"""
         SELECT * FROM measurements
         WHERE station_id = "{station_id}"
@@ -45,6 +73,10 @@ def get_time_series(station_id: str, variable: str):
 
 
 def construct_charts(type: str, station_id: str):
+    """
+    Construct the charts for the given type of data in a tab.
+    """
+
     match type:
         case "temperature":
             tn = get_time_series(station_id, "TN")
@@ -124,8 +156,13 @@ def construct_charts(type: str, station_id: str):
     except ValueError:
         st.write("Not enough data to decompose the time series.")
 
+## Page content
 
 def display_page():
+    """
+    Main function to display the page.
+    """
+    
     with st.sidebar:
         st.write("**Weather Station Information**")
         station_ids = get_station_list()["station_id"].sort_values()
